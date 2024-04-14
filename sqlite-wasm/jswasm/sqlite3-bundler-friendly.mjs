@@ -48,6 +48,11 @@ var sqlite3InitModule = (() => {
       readyPromiseReject = reject;
     });
 
+    const fsRoot = Module['fsRoot'];
+    if (!fsRoot) {
+      throw new Error('fsRoot is required');
+    }
+
     const sqlite3InitModuleState =
       globalThis.sqlite3InitModuleState ||
       Object.assign(Object.create(null), {
@@ -13415,17 +13420,12 @@ var sqlite3InitModule = (() => {
                       sanityCheck();
                     }
                     if (thisThreadHasOPFS()) {
-                      navigator.storage
-                        .getDirectory()
-                        .then((d) => {
-                          W.onerror = W._originalOnError;
-                          delete W._originalOnError;
-                          sqlite3.opfs = opfsUtil;
-                          opfsUtil.rootDirectory = d;
-                          log('End of OPFS sqlite3_vfs setup.', opfsVfs);
-                          promiseResolve();
-                        })
-                        .catch(promiseReject);
+                      W.onerror = W._originalOnError;
+                      delete W._originalOnError;
+                      sqlite3.opfs = opfsUtil;
+                      opfsUtil.rootDirectory = fsRoot;
+                      log('End of OPFS sqlite3_vfs setup.', opfsVfs);
+                      promiseResolve();
                     } else {
                       promiseResolve();
                     }
@@ -14014,7 +14014,7 @@ var sqlite3InitModule = (() => {
 
           async reset(clearFiles) {
             await this.isReady;
-            let h = await navigator.storage.getDirectory();
+            let h = fsRoot;
             let prev, prevName;
             for (const d of this.vfsDir.split('/')) {
               if (d) {
@@ -14257,7 +14257,7 @@ var sqlite3InitModule = (() => {
         }
 
         const apiVersionCheck = async () => {
-          const dh = await navigator.storage.getDirectory();
+          const dh = fsRoot;
           const fn = '.opfs-sahpool-sync-check-' + getRandomName();
           const fh = await dh.getFileHandle(fn, { create: true });
           const ah = await fh.createSyncAccessHandle();

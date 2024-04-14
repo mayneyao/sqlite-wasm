@@ -2197,6 +2197,7 @@ declare type InitOptions = {
   locateFile?: (path: string, prefix: string) => string;
   print?: (msg: string) => void;
   printErr?: (msg: string) => void;
+  fsRoot: FileSystemDirectoryHandle;
 };
 
 /**
